@@ -1,0 +1,32 @@
+#!/usr/bin/ruby
+#
+# Print a host (MAC) -> alias mapping from a Crowbar admin node supportconfig
+
+require 'json'
+require 'pathname'
+
+jsons = Pathname.glob((ARGV[0] || '.') +
+                      "/rootfs/var/log/crowbar/chef-export/node/*.json")
+
+alias_to_host = {}
+jsons.each do |json|
+  j = JSON.load(json)
+  fqdn = File.basename(json, ".json")
+  hostname = fqdn.sub /\..*/, ''
+  crowbar = j["normal"]["crowbar"]
+  display = crowbar ? crowbar.fetch("display", nil) : nil
+  host_alias = display ? display.fetch("alias", nil) : nil
+
+  if host_alias
+    host_alias.sub! /-node(\d)/, "\\1"
+    alias_to_host[host_alias] = hostname
+  end
+end
+
+virtualized = alias_to_host.find { |host_alias, hostname| hostname =~ /-77-77-/ }
+sorted_aliases = alias_to_host.sort_by do |host_alias, hostname|
+  virtualized ? hostname : host_alias
+end
+sorted_aliases.each do |host_alias, hostname|
+  puts "%s: %s" % [hostname, host_alias]
+end

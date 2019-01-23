@@ -1,0 +1,48 @@
+#
+# @synopsis: SOC-filters
+# @description: Filter SOC logs for interesting events
+#
+
+# General
+:filter-in ^ANNOTATION: 
+:filter-in ERROR|FATAL|Traceback
+:filter-in ^systemctl
+:filter-in reboot
+:filter-in kernel: \[ *0.00*\] (Linux version|Command line)
+:filter-in zypper
+:filter-in systemd.* (Starting|Stopping)
+
+# Crowbar
+
+# Chef
+:filter-in INFO: \*\*\* Chef 1.* \*\*\*
+:filter-in INFO: Run List
+:filter-in INFO: (Taking node out of )?Pacemaker maintenance mode
+:filter-in INFO: Report handlers complete
+
+# corosync
+:filter-in TOTEM.*Retransmit
+
+# Pacemaker
+:filter-in crm resource
+:filter-in crm (--wait )?node
+:filter-in update_dc:\tSet DC to
+:filter-in crmd\[.*High CPU
+:filter-in pengine.* (Calculated Transition|LogActions:)
+:filter-in lrmd\[\d+\]:  *log_(execute|finished): .*(stop|start)
+:filter-in crmd.* run_graph:
+:filter-in fence|fencing
+:filter-in revived
+
+# Dependencies of OpenStack
+:filter-in pgsql.* PostgreSQL is
+
+# OpenStack
+:filter-in neutron-ha-tool
+:filter-in neutron-server: 
+
+:filter-out Plymouth Reboot
+:filter-out pengine:.*determine_online_status_fencing:.* is active
+:filter-out pengine.*Relying on watchdog integration for fencing
+:filter-out systemd.* (Starting|Stopping) (Shutdown|User Manager|Session|Exit the Session|Paths|Timers|Sockets|Default|Basic System|user-\d*)
+:filter-out (attrd|cib): .*neutron-ha-tool

@@ -1,0 +1,76 @@
+#!/usr/bin/ruby
+#
+# Script which uses lnav to display a timeline of significant events
+# on the SUSE OpenStack Cloud admin server
+
+require 'pathname'
+
+# Useful production.log patterns
+PATTERNS = [
+  "Processing by %#proposal_commit as JSON",
+  "Preparing batch with following roles:",
+  "Network allocate ip for",
+]
+
+# Find path to which all log files are relative.  This allows this
+# script to examine both live servers and supportconfigs.
+def find_root
+  pwd = Dir.pwd
+  if pwd.end_with? "rootfs"
+    ""        # analysing a supportconfig
+  elsif pwd =~ %r{/nts_} && File.directory?("rootfs")
+    "rootfs/" # analysing a supportconfig
+  elsif File.exist? "/var/log/crowbar/install.log"
+    "/"       # on an actual admin server
+  else
+    abort "Couldn't find log files; aborting."
+  end
+end
+
+def pattern_commands
+  PATTERNS.map do |pat|
+    # https://github.com/tstack/lnav/issues/388
+    [
+      '-c',
+      %Q/;update rubylogger set log_mark = 1 where log_body like "%#{pat}%"\n/
+    ]
+  end.flatten
+end
+
+def lnav(files)
+  ENV['TZ'] = 'UTC'
+  ENV['LANG'] = 'C'
+
+  system 'lnav2', '--',
+         *pattern_commands,
+         *files
+end
+
+def re_glob(glob, re)
+  Pathname.glob(glob).map(&:to_s).grep re
+end
+
+def files_to_view
+  # user:
+  # - "#{root}root/.bash_history",
+  # 
+  # sys:
+  # - "#{root}var/log/messages",
+  # 
+  # crowbar:
+  # - "#{root}var/log/crowbar/production.log",
+  #   "#{root}var/log/crowbar/chef-client/*.log",
+  #   "#{root}var/log/chef/client.log",
+  root = find_root
+
+  return [
+    *re_glob("#{root}var/log/crowbar/production.log*",    /\.log(-\d+)?$/),
+    *re_glob("#{root}var/log/crowbar/chef-client/*.log*", /\.log(-\d+)?$/),
+  ]
+end
+
+def main
+  lnav(files_to_view)
+end
+
+main

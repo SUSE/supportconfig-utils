@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#
+# This script is obsolete!  Instead please use lnav-chef-sync-marks!
+#
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+
+
+
+
+
+
+
+# Show all synchronization points between Crowbar nodes, sorted
+# chronologically, with all matches highlighted and colour-coded
+# according to the node:
+#
+#   default match colour: red (or whatever grep highlights with)
+#   nodes ending in -77-02: green
+#   nodes ending in -77-03: yellow
+#   nodes ending in -77-04: blue
+#
+# Type 1 sync points are highlighted in bold white if they are critical
+#     (i.e. "create-" on the founder, which is assumed to be node1, and
+#     "wait-" on other nodes).
+# Type 2 sync points are highlighted in bold white.
+#
+# Also include the beginning of each chef-client run, and any mentions
+# of FATAL.
+#
+# This helps debugging synchronization, especially bsc#935462 (missing
+# synchronization means chef-client runs on cluster nodes drift apart)
+
+if [ $# = 0 ]; then
+    echo "Usage: $0 <chef-client log> [...]" >&2
+    exit 1
+fi
+
+esc=$'\e'
+egrep --color=always \
+      '(\*\*\* Chef [0-9].*|FATAL.*|Processing crowbar-pacemaker_sync_mark\[.*\])'\
+      "$@" |
+    sed -r "
+        s/\.cloud\.suse\.de\.log(.*)(\[201[0-9])/\1 \2/;
+        /-77-02/s/$esc\[01;31m/$esc\[01;32m/;
+        /-77-03/s/$esc\[01;31m/$esc\[01;33m/;
+        /-77-04/s/$esc\[01;31m/$esc\[01;34m/;
+        s/( crowbar-pacemaker_sync_mark\[)(sync-)/\1$esc\[0;1m\2/;
+        /-77-01/   s/( crowbar-pacemaker_sync_mark\[)(create-)/\1$esc\[0;1m\2/;
+        /-77-0[^1]/s/( crowbar-pacemaker_sync_mark\[)(wait-)/\1$esc\[0;1m\2/;
+        " |
+    sort -k2 -k1 |
+    less -p 'FATAL'

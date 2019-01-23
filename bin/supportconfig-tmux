@@ -1,0 +1,209 @@
+#!/bin/bash
+
+if [ -e ~/.tmux.d/lib ]; then
+    source ~/.tmux.d/lib
+elif [ -e /usr/lib/tmux/sessions ]; then
+    source /usr/lib/tmux/sessions
+else
+    echo "Couldn't find tmux session library; aborting!" >&2
+    exit 1
+fi
+
+main () {
+    supportconfig="$1"
+
+    pwd="`pwd`"
+    echo "pwd is $pwd"
+
+    if ! [ -e "$supportconfig" ]; then
+        echo "$supportconfig doesn't exist; aborting!" >&2
+        exit 1
+    fi
+
+    unpacked="${supportconfig##*/}"
+    if ! [ -d "$supportconfig" ]; then
+        unpacked="${unpacked%.tbz}"
+        unpack-supportconfig -d "$supportconfig"
+        if ! [ -d "$unpacked" ]; then
+            echo "Failed to unpack $supportconfig; aborting!" >&2
+            exit 1
+        fi
+    fi
+
+    cd "$unpacked"
+
+    extract_info "$unpacked"
+
+    tmux_new_session
+
+    # Doing a cd above can also care of this
+    #tmux set-option default-path ~/
+
+    tmux set-option -t "$tmux_session" status-left-length 30
+
+    # dircolors -b returns no colours with screen-256color-bce-{s,it}
+    tmux set-option -t "$tmux_session" -g default-terminal screen-256color
+
+    # Allow respawning of zombie windows
+    tmux set-option -t "$tmux_session" set-remain-on-exit on
+    tmux set-option -t "$tmux_session" visual-bell on
+    #tmux set-window-option -t dsrv remain-on-exit on
+
+    tmux_new_window -n VM
+    tmux send-keys -t :VM 'lnav2 rootfs/var/log/messages' Enter
+
+    if [ -e rootfs/var/log/crowbar/install.log ]; then
+        admin_server=yes
+        admin_chef_client_windows
+    fi
+
+    compute_logs=rootfs/var/log/nova
+    if [ -e $compute_logs/nova-compute.log ]; then
+        compute=yes
+        lnav_window compute "${compute_logs}/*"
+    fi
+
+    local_chef_client_log=rootfs/var/log/chef/client.log
+    if [ -e $local_chef_client_log ]; then
+        chef_client_window "lcc" "$local_chef_client_log"
+    fi
+
+    if [ -n "$admin_server" ]; then
+        tmux send-keys -t :0 'crowbar-macs' Enter
+        tmux select-window -t :lnav
+    else
+        tmux select-window -t :0
+    fi
+
+    tmux_attach
+
+    cd "$pwd"
+    maybe_delete "$unpacked"
+}
+
+extract_info () {
+    # Typical supportconfig is named something like one of these:
+    #
+    #   nts_crowbar.vd3.cloud.suse.de_151126_1634.tbz
+    #   nts_crowbar_151126_1634.tbz
+    #   nts_d52-54-77-77-77-01_151207_0105.tbz
+    #
+    # so let's choose a unique tmux session name based on this.
+    supportconfig_id="${unpacked#nts_}"
+    supportconfig_id="${supportconfig_id/.cloud.suse.de/}"
+    node_name="${supportconfig_id%_*_*}"
+    date_time="${supportconfig_id#${node_name}_}"
+
+    cloud=
+    case "$node_name" in
+        crowbar)
+            # unknown cloud name
+            node_nickname=admin
+            ;;
+        crowbar.*)
+            # admin node
+            cloud="${node_name#crowbar.}"
+            node_name="${node_name%.$cloud}"
+            node_nickname="admin-${cloud}"
+            ;;
+        d52-54-??-77-77-*)
+            # other node
+            node_nickname="${node_name/d52-54-??-77-77-/node}"
+            ;;
+        d*)
+            node_nickname="${node_name//-/}"
+            ;;
+        *)
+            node_nickname="$node_name"
+            ;;
+    esac
+
+    tmux_session="$node_nickname-$date_time"
+
+    echo id $supportconfig_id
+    echo cloud $cloud
+    echo node $node_name
+    echo node nickname $node_nickname
+    echo date/time $date_time
+    echo session $tmux_session
+}
+
+admin_chef_client_windows () {
+    local ccdir=rootfs/var/log/crowbar/chef-client
+
+    tmux_new_window -n sync
+    tmux send-keys -t :sync \
+         "lnav-chef-sync-marks $ccdir/*.log" Enter
+
+    tmux_new_window -n lnav
+    tmux send-keys -t :lnav \
+         "crowbar-lnav-admin" Enter
+
+    local node_name cc_log_file
+    for cc_log_file in $ccdir/*.log; do
+        node_name="${cc_log_file##*/}"
+        node_name="${node_name%%.*}"
+        case "$node_name" in
+            crowbar)
+                win=admin
+                ;;
+            d52-54-??-77-77-[0-9][0-9])
+                win=${node_name#d52-54-??-77-77-}
+                ;;
+            d[0-9a-f][0-9a-f]-??-??-??-??-??)
+                win=${node_name//-/}
+                ;;
+            *)
+                win=$node_name
+                ;;
+        esac
+        win="${win#0}"
+        case "$win" in
+            [1-9]*)
+                win=cc$win
+                ;;
+            *)
+                win=cc-$win
+                ;;
+        esac
+        chef_client_window "$win" "$cc_log_file"
+    done
+}
+
+chef_client_window () {
+    local win="$1" log="$2"
+    lnav_window "$win" "$log" \
+        "-c ':filter-out FATAL: No authorization keys found' "\
+        "-c ':highlight .*INFO: \*\*\* Chef.*|^={60,}' "
+}
+
+lnav_window () {
+    local win="$1" log="$2"
+    shift 2
+    tmux_new_window -n $win
+    tmux send-keys -t :$win \
+        "lnav2 -- $* $log" \
+        Enter
+}
+
+maybe_delete () {
+    local unpacked="$1"
+    echo "Delete $unpacked [Y] ?"
+    echo -n "Hit Enter to proceed or anything else to keep > "
+    read answer
+    if [ -z "$answer" ] || [[ "$answer" == [Yy] ]]; then
+        case "$unpacked" in
+            nts_*|*/nts_*)
+                if ! rm -rf "$unpacked"; then
+                    echo "Failed: rm -rf $unpacked" >&2
+                    exit 1
+                fi
+                ;;
+            *)
+                echo "Didn't look like an unpacked supportconfig; cowardly refusing to delete." >&2
+                ;;
+        esac
+    fi
+}
+
+main "$@"

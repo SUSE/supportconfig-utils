@@ -1,0 +1,44 @@
+#!/usr/bin/ruby
+#
+# Print an IP -> alias mapping from a Crowbar admin node supportconfig
+
+require 'yaml'
+require 'json'
+require 'pathname'
+
+def read_IPs(mac_to_alias, jsons)
+  addr_to_alias = {}
+  jsons.each do |json|
+    j = JSON.load(json)
+    network_name = j["id"].sub(/_network$/, "")
+    j["allocated"].each do |ip, data|
+      fqdn = data["machine"]
+      hostname = fqdn.sub /\..*/, ''
+      host_alias = mac_to_alias[hostname]
+      if host_alias
+        address = data["address"]
+        addr_to_alias[address] = "IP-%s-%s" % [network_name, host_alias]
+      end
+    end
+  end
+  addr_to_alias
+end
+
+def show_IPs(addr_to_alias)
+  puts YAML.dump(addr_to_alias)
+end
+
+def main
+  if ARGV.size != 1
+    abort "Usage: #$0 MACS-YAML"
+  end
+
+  macs_file = ARGV.shift
+  mac_to_alias = YAML.load_file(macs_file)
+
+  jsons = Pathname.glob("./rootfs/var/log/crowbar/chef-export/databag/crowbar/*_network.json")
+  addr_to_alias = read_IPs(mac_to_alias, jsons)
+  show_IPs(addr_to_alias)
+end
+
+main

@@ -1,0 +1,37 @@
+#!/bin/bash
+
+delete=
+if [ "$1" = '-d' ]; then
+     delete=true
+     shift
+fi
+
+orig_dir="`pwd`"
+
+for supportconfig in "$@"; do
+    cd "$orig_dir"
+
+    if ! dir=$(unpack "$supportconfig"); then
+        exit $?
+    fi
+
+    if ! cd "$dir"; then
+        echo >&2 "Expected directory $dir was missing"
+        exit 1
+    fi
+
+    if ! [ -e basic-environment.txt ]; then
+        echo >&2 "ERROR: basic-environment.txt missing - are you sure this is a supportconfig?"
+        exit 1
+    fi
+
+    if ! split-supportconfig *.txt; then
+        echo >&2 "ERROR: failed to split $supportconfig"
+        exit 1
+    fi
+
+    if [ -n "$delete" ]; then
+        cd "$orig_dir"
+        rm "$supportconfig"
+    fi
+done

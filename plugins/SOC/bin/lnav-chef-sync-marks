@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Show all synchronization points between Crowbar nodes, sorted
+# chronologically, with all matches highlighted and colour-coded
+# according to the node:
+#
+# Type 1 sync points are highlighted if they are critical,
+#     i.e. "create-" on the founder, which is assumed to be node1, and
+#     "wait-" on other nodes.
+#
+#     N.B. this highlighting only appears after pressing 'x' to toggle
+#     display of filenames, which requires my patch:
+#
+#         https://github.com/tstack/lnav/pull/372
+#
+#     which is included in my OBS package of lnav:
+#
+#         https://build.opensuse.org/package/show/home:aspiers:branches:server:monitoring/lnav
+#
+# Type 2 sync points ("sync-") are also highlighted.
+#
+# Also include the beginning of each chef-client run, and any mentions
+# of FATAL.
+#
+# This helps debugging synchronization, especially bsc#935462 (missing
+# synchronization means chef-client runs on cluster nodes drift apart)
+
+if [ $# = 0 ]; then
+    echo "Usage: $0 <chef-client log> [...]" >&2
+    exit 1
+fi
+
+lnav2 \
+    -c ':filter-in Processing crowbar-pacemaker_sync_mark\[.*\])' \
+    -c ':filter-in \*\*\* Chef [0-9].*' \
+    -c ':filter-in FATAL.*' \
+    -c ':filter-in Setting .* cluster mark' \
+    -c ':filter-out FATAL: No authorization keys found' \
+    -c ':highlight ^.*77-01.*create-.*|sync-' \
+    "$@"
+
+# See how much nicer this is than check-chef-client-drift-old !

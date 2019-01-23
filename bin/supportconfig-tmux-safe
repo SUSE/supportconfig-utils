@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Always unpack somewhere obvious
+cd
+
+# If supportconfig-tmux fails, make sure the error is visible.
+if ! supportconfig-tmux "$@"; then
+    sleep 5
+fi

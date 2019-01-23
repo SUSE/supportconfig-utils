@@ -1,0 +1,25 @@
+user:
+  - annotations.txt
+  - bash_histories*/*
+system:
+  - nts_*/rootfs/var/log/messages
+crowbar:
+  - nts_*/rootfs/var/log/crowbar/production.log
+  - nts_*/rootfs/var/log/crowbar/chef-client/*
+chef:
+  - nts_*/rootfs/var/log/chef/client.log
+openvswitch:
+  - nts_*/rootfs/var/log/openvswitch/*
+neutron_server:
+  - nts_*/rootfs/var/log/neutron/neutron-server.log
+neutron_agents:
+  - nts_*/rootfs/var/log/neutron/neutron-openvswitch*
+  - nts_*/rootfs/var/log/neutron/neutron-l3-agent*
+nova_compute:
+  - nts_*/rootfs/var/log/nova/nova-compute.log
+#qemu:
+#  - compute/nts_*/rootfs/var/log/libvirt/qemu/instance-000c2504.log
+pacemaker:
+  - nts_*/rootfs/var/log/pacemaker.log
+rabbit:
+  - nts_*/rootfs/var/log/rabbit/*.log

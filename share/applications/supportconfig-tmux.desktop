@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=supportconfig-tmux
+GenericName=supportconfig handler
+Exec=supportconfig-tmux-window %u
+Type=Application
+Terminal=false
+MimeType=application/x-supportconfig;
+Categories=Development;Debugger;Utility;Archiving;System;Filesystem;

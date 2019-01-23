@@ -1,0 +1,15 @@
+#!/bin/sh
+
+for cfg in /etc/supportconfig/tmux-window ~/.config/supportconfig/tmux-window
+do
+    if [ -e $cfg ]; then
+        source $cfg
+    fi
+done
+
+# In case the window manager's environment accidentally got polluted
+# with a TMUX variable, e.g. by running "$MY_WINDOW_MANAGER --restart"
+# from the CLI inside a tmux session.
+unset TMUX TMUX_PANE
+
+${SUPPORTCONFIG_TERMINAL:-xdg-terminal} supportconfig-tmux-safe "$@"

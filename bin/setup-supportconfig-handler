@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# Ensure ~/.local/share/applications/mimeapps.list has an appropriate
+# entry for handling supportconfigs
+xdg-mime default supportconfig-tmux.desktop application/x-supportconfig
+
+# This should succeed even without running the above, but it's worth checking
+# anyway.
+if ! xdg-mime query default application/x-supportconfig | grep -q supportconfig-tmux; then
+    echo "WARNING: xdg-mime failed to install handler for supportconfigs!" >&2
+fi
+
+# Once desktop-config is stowed, these two seem to be equivalent, and
+# result in a copy being installed in
+# ~/.local/share/mime/applications/x-supportconfig.xml
+#
+#update-mime-database ~/.local/share/mime
+xdg-mime install ~/.local/share/mime/packages/suse-supportconfig.xml
