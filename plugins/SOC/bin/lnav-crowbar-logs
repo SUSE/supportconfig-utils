@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+# Post-process, chronologically merge, and filter a bunch of SOCC logs
+# so we can perform analysis on potentially significant events.
+#
+# See README.md for documentation.
+
+set -e
+
+here=`dirname $0`
+
+export TZ=UTC  # make sure we don't get bitten by any weird lnav bug
+
+MACs=MACs.yml
+
+lnav_args=()
+if [ "$1" = "-f" ]; then
+    shift
+    lnav_args=( -f $here/../etc/lnav-SOCC-filters.txt )
+fi
+
+files="$( postprocess-crowbar-logs log-files.yml $MACs $@ | grep -v compute )"
+
+$here/lnav2 \
+    "${lnav_args[@]}" \
+    $files
+
+#       --hide-before "Dec 3 7:30am UTC" \
