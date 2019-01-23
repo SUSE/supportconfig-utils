@@ -1,6 +1,15 @@
 #!/usr/bin/ruby
 #
-# Wrapper around lnav which adds some handy extra options.
+# Wrapper around lnav which adds some handy extra options / features:
+#
+#   - make r/R hotkeys default to navigating one minute forward/back
+#
+#   - --hide-before option to ignore lines before a certain time
+#
+#   - --start-at option to jump to a specific time on startup
+#
+#   - if --start-at is not given, places the first error (roughly)
+#     in the middle of the screen
 
 require 'time'
 require 'optparse'
