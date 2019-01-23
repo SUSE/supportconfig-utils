@@ -187,7 +187,7 @@ which gathers extra product-specific information into a supportconfig
 tarball run on any node with the product installed.  The extensions
 listed here take advantage of that extra information.
 
-*   [`crowbar-macs`](plugins/SOC/bin/crowbar-macs)
+*   [`crowbar-MACs`](plugins/SOC/bin/crowbar-MACs)
 *   [`crowbar-IPs`](plugins/SOC/bin/crowbar-IPs)
 *   [`crowbar-lnav-admin`](plugins/SOC/bin/crowbar-lnav-admin)
 *   TODO ...

@@ -69,7 +69,7 @@ main () {
     fi
 
     if [ -n "$admin_server" ]; then
-        tmux send-keys -t :0 'crowbar-macs' Enter
+        tmux send-keys -t :0 'crowbar-MACs' Enter
         tmux select-window -t :lnav
     else
         tmux select-window -t :0
