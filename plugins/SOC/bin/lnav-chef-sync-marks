@@ -39,4 +39,4 @@ lnav2 \
     -c ':highlight ^.*77-01.*create-.*|sync-' \
     "$@"
 
-# See how much nicer this is than check-chef-client-drift-old !
+# See how much nicer this is than check-chef-client-drift !
