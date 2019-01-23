@@ -5,5 +5,10 @@ cd
 
 # If supportconfig-tmux fails, make sure the error is visible.
 if ! supportconfig-tmux "$@"; then
-    sleep 5
+    cat <<EOF >&2
+
+supportconfig-tmux $* failed.
+Press Enter to close this window ...
+EOF
+    read
 fi
