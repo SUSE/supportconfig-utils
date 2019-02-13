@@ -2,7 +2,7 @@
 
 for cfg in \
     /etc/sysconfig/supportconfig-utils \
-    ~/.config/supportconfig/tmux-window
+    ~/.config/supportconfig-utils/tmux-window
 do
     if [ -e $cfg ]; then
         source $cfg

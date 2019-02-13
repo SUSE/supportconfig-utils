@@ -66,10 +66,10 @@ By default, new terminal sessions will be launched using
 emulator application.  However if this doesn't work to your taste, it
 can be overridden by placing something like
 
-    SUPPORTCONFIG_TERMINAL="urxvt-256color -g 200x60 -e"
+    SUPPORTCONFIG_UTILS_TMUX_TERMINAL="urxvt-256color -g 200x60 -e"
 
-in either `~/.config/supportconfig/tmux-window` or
-`/etc/supportconfig/tmux-window`.
+in either `~/.config/supportconfig-utils/tmux-window` or
+`/etc/sysconfig/supportconfig-utils`.
 
 In the future, other configuration options may be added.  PRs are of
 course welcome!
