@@ -1,6 +1,8 @@
 #!/bin/sh
 
-for cfg in /etc/supportconfig/tmux-window ~/.config/supportconfig/tmux-window
+for cfg in \
+    /etc/supportconfig-utils/tmux-window \
+    ~/.config/supportconfig/tmux-window
 do
     if [ -e $cfg ]; then
         source $cfg
