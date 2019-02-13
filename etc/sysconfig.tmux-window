@@ -1,0 +1,5 @@
+## Type:	string
+## Default	"xdg-terminal"
+# The terminal emulator in which supportconfig-tmux-window will
+# launch supportconfig-tmux sessions.
+SUPPORTCONFIG_TERMINAL=xdg-terminal
