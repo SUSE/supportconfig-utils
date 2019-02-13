@@ -5,7 +5,7 @@
 Any kind of feedback is very welcome; please first check that your bug
 / issue / enhancement request is not already listed here:
 
-*   https://github.com/aspiers/supportconfig-utils/issues
+*   https://github.com/SUSE/supportconfig-utils/issues
 
 and if not then file a new issue.
 

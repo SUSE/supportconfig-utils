@@ -3,7 +3,7 @@
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #   DO NOT USE THIS DIRECTLY!  Instead use unpack-supportconfig which
 #   wraps around it.  However it's recommended to install from rpms -
-#   see https://github.com/aspiers/SUSE-dist for details.
+#   see https://github.com/SUSE/supportconfig-utils for details.
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #
 # Splits out (de-multiplexes) file contents from a supportconfig file
