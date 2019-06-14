@@ -1,5 +1,6 @@
-user:
+notes:
   - annotations.txt
+operator:
   - bash_histories*/*
 system:
   - nts_*/rootfs/var/log/messages
@@ -10,6 +11,9 @@ chef:
   - nts_*/rootfs/var/log/chef/client.log
 openvswitch:
   - nts_*/rootfs/var/log/openvswitch/*
+keystone:
+  - nts_*/rootfs/var/log/keystone/keystone.log
+  - nts_*/rootfs/var/log/apache2/keystone*.log
 neutron_server:
   - nts_*/rootfs/var/log/neutron/neutron-server.log
 neutron_agents:

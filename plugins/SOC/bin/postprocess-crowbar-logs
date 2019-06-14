@@ -75,7 +75,7 @@ def preprocess_all(files, mac_to_host, addr_to_host)
   end.compact
 end
 
-def preprocess(in_file, out_file, regexp, mac_to_host, addr_to_host)
+def preprocess(in_file, out_file, macs_regexp, mac_to_host, addr_to_host)
   progress "  -> #{out_file}"
   File.open(out_file, "w") do |out|
     File.new(in_file, encoding: Encoding::ASCII_8BIT).each do |line|
