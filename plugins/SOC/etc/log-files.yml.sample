@@ -1,5 +1,6 @@
-user:
+notes:
   - annotations.txt
+operator:
   - bash_histories*/*
 system:
   - nts_*/rootfs/var/log/messages
