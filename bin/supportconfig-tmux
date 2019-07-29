@@ -22,7 +22,11 @@ main () {
 
     unpacked="${supportconfig##*/}"
     if ! [ -d "$supportconfig" ]; then
-        unpacked="${unpacked%.tbz}"
+        if [[ "$unpacked" == *.tbz ]]; then
+            unpacked="${unpacked%.tbz}"
+        elif [[ "$unpacked" == *.tar.bz2 ]]; then
+            unpacked="${unpacked%.tar.bz2}"
+        fi
         unpack-supportconfig -d "$supportconfig"
         if ! [ -d "$unpacked" ]; then
             echo "Failed to unpack $supportconfig; aborting!" >&2
