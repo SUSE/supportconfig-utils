@@ -145,6 +145,11 @@ List of core utilities
     files such as `var/log/crowbar/install.log`, which will be
     extracted to `rootfs/var/log/crowbar/install.log`.
 
+*   [`soc-plugin-extractor.py`](bin/soc-plugin-extractor.py) - extract
+    or lists files in plugin-suse_openstack_cloud.txt. Can be run
+    directly. Unlike split-supportconfig, a subset of files to extract
+    can be specified with --pattern.
+
 ### Utilities for setting up analysis/debugging sessions
 
 *   [`supportconfig-tmux-window`](bin/supportconfig-tmux-window) - a
